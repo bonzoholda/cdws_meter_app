@@ -3,7 +3,7 @@
 from fastapi import Request, Form
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
-from app.main import templates
+from app.utils import templates
 import os
 import json
 from dotenv import load_dotenv
