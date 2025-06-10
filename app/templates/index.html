@@ -7,74 +7,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CDWS Meter Entry</title>
   <link rel="stylesheet" href="static/style.css" />
+  <!-- Html5Qrcode from CDN (non-versioned, reliable) -->
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 10px;
       padding: 0;
-      background: #f9f9f9;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
     }
     h2, h3 {
       text-align: center;
     }
-    form {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
     label {
       display: block;
-      margin: 15px 0 5px;
+      margin: 8px 0 4px 0;
       font-weight: bold;
     }
-    input[type=text], input[type=file], select {
+    input, select, button {
       width: 100%;
-      padding: 10px;
-      box-sizing: border-box;
+      padding: 8px;
       font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      margin-bottom: 12px;
+      box-sizing: border-box;
     }
-    button {
-      margin-top: 20px;
+    #qr-reader {
+      width: 100% !important;
+      max-width: 320px;
+      margin: 0 auto 15px auto;
+    }
+    #video {
       width: 100%;
-      padding: 12px;
-      font-size: 1.1rem;
-      background-color: #2a7ae2;
+      max-width: 320px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      display: block;
+      margin: 0 auto 10px auto;
+    }
+    #photo {
+      display: none;
+      width: 100%;
+      max-width: 320px;
+      margin: 10px auto;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+    #snap {
+      width: 100%;
+      background-color: #007bff;
       color: white;
       border: none;
       border-radius: 6px;
+      padding: 10px;
+      font-size: 1.1rem;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      margin-bottom: 20px;
     }
-    button:hover:not(:disabled) {
-      background-color: #185abc;
-    }
-    button:disabled {
-      background-color: #999;
+    #snap:disabled {
+      background-color: #aaa;
       cursor: not-allowed;
     }
-    #qr-reader {
-      margin: 20px auto;
-      width: 100%;
-      max-width: 400px;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 0 12px rgba(0,0,0,0.15);
+    #start-qr-btn, #stop-qr-btn {
+      width: 48%;
+      font-size: 1rem;
+      padding: 8px;
+      margin: 0 1% 12px 1%;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
     }
-    #startScanner, #stopScanner {
-      max-width: 200px;
-      margin: 10px auto;
-      display: block;
+    #start-qr-btn {
+      background-color: #28a745;
+      color: white;
     }
-    @media (max-width: 600px) {
-      form, #qr-reader {
-        width: 90%;
-      }
+    #stop-qr-btn {
+      background-color: #dc3545;
+      color: white;
     }
   </style>
 </head>
@@ -83,106 +94,144 @@
 
   <form id="uploadForm" enctype="multipart/form-data" method="post">
     <label for="user_id">User ID:</label>
-    <input type="text" name="user_id" id="user_id" required />
+    <input type="text" name="user_id" id="user_id" required autocomplete="off" />
 
     <label for="sr_no">SR No:</label>
-    <input type="text" name="sr_no" id="sr_no" required />
+    <input type="text" name="sr_no" id="sr_no" required autocomplete="off" />
 
-    <label for="image">Meter Photo:</label>
-    <input type="file" name="image" id="image" accept="image/*" capture="environment" required />
+    <label>Meter Photo:</label>
+    <!-- Video preview -->
+    <video id="video" autoplay playsinline></video>
+    <!-- Canvas for capture, hidden -->
+    <canvas id="canvas" style="display:none;"></canvas>
+    <!-- Preview captured photo -->
+    <img id="photo" alt="Meter photo preview" />
 
+    <button type="button" id="snap" disabled>Take Picture</button>
     <button type="submit">Submit</button>
   </form>
 
-  <div style="text-align:center; margin-top: 40px;">
+  <hr />
+
+  <div>
     <h3>Scan QR Code</h3>
-    <select id="targetField" style="width: 150px; padding: 8px; margin-bottom: 15px;">
+    <select id="targetField">
       <option value="user_id">User ID</option>
       <option value="sr_no">SR No</option>
     </select>
 
     <div id="qr-reader"></div>
-
-    <button id="startScanner">Start Scanner</button>
-    <button id="stopScanner" disabled>Stop Scanner</button>
+    <div style="text-align:center;">
+      <button id="start-qr-btn">Start Scanner</button>
+      <button id="stop-qr-btn" disabled>Stop Scanner</button>
+    </div>
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      // Now Html5Qrcode is guaranteed to be loaded
+    // ----------- Camera photo capture setup -----------
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const photo = document.getElementById('photo');
+    const snap = document.getElementById('snap');
+    let stream = null;
 
-      const form = document.getElementById("uploadForm");
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const formData = new FormData(form);
-        try {
-          const response = await fetch("/upload-image/", {
-            method: "POST",
-            body: formData,
-          });
-          const result = await response.json();
-          alert(result.message || "Upload completed.");
-          form.reset();
-        } catch (error) {
-          alert("Upload failed: " + error.message);
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
+        snap.disabled = false;
+      } catch (err) {
+        alert("Error accessing camera: " + err.message);
+        snap.disabled = true;
+      }
+    }
+
+    snap.addEventListener('click', () => {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL('image/jpeg');
+      photo.src = dataUrl;
+      photo.style.display = 'block';
+    });
+
+    startCamera();
+
+    // ----------- QR Scanner setup -----------
+    let qrScanner = null;
+    const qrReaderElem = document.getElementById("qr-reader");
+    const startQrBtn = document.getElementById("start-qr-btn");
+    const stopQrBtn = document.getElementById("stop-qr-btn");
+
+    startQrBtn.addEventListener("click", () => {
+      if (qrScanner) return; // already running
+
+      qrScanner = new Html5Qrcode("qr-reader");
+      qrScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        qrCodeMessage => {
+          const target = document.getElementById("targetField").value;
+          document.getElementById(target).value = qrCodeMessage;
+        },
+        errorMessage => {
+          // ignore scan errors
         }
+      ).then(() => {
+        startQrBtn.disabled = true;
+        stopQrBtn.disabled = false;
+      }).catch(err => {
+        alert("Failed to start QR scanner: " + err);
       });
+    });
 
-      const qrReader = new Html5Qrcode("qr-reader");
-      const startBtn = document.getElementById("startScanner");
-      const stopBtn = document.getElementById("stopScanner");
+    stopQrBtn.addEventListener("click", () => {
+      if (!qrScanner) return;
 
-      async function hasCamera() {
-        try {
-          const devices = await Html5Qrcode.getCameras();
-          return devices && devices.length > 0;
-        } catch (err) {
-          console.error("Camera check failed:", err);
-          return false;
-        }
+      qrScanner.stop().then(() => {
+        qrScanner.clear();
+        qrScanner = null;
+        startQrBtn.disabled = false;
+        stopQrBtn.disabled = true;
+      }).catch(err => {
+        alert("Failed to stop QR scanner: " + err);
+      });
+    });
+
+    // ----------- Form submission with captured photo -----------
+
+    const form = document.getElementById("uploadForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+
+      if (photo.src) {
+        // Convert base64 dataURL to Blob and append as "image"
+        const res = await fetch(photo.src);
+        const blob = await res.blob();
+        formData.set("image", blob, "meter_photo.jpg");
+      } else {
+        alert("Please take a picture of the meter.");
+        return;
       }
 
-      startBtn.addEventListener("click", async () => {
-        const cameraAvailable = await hasCamera();
-        if (!cameraAvailable) {
-          alert("No camera found on this device.");
-          return;
-        }
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
+      try {
+        const response = await fetch("/upload-image/", {
+          method: "POST",
+          body: formData
+        });
 
-        qrReader
-          .start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: 250 },
-            (qrCodeMessage) => {
-              const target = document.getElementById("targetField").value;
-              document.getElementById(target).value = qrCodeMessage;
-            },
-            (errorMessage) => {
-              // ignore scan errors
-            }
-          )
-          .catch((err) => {
-            console.error("Unable to start QR scanner:", err);
-            alert("Failed to start QR scanner: " + err.message);
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-          });
-      });
-
-      stopBtn.addEventListener("click", () => {
-        qrReader
-          .stop()
-          .then(() => {
-            startBtn.disabled = false;
-            stopBtn.disabled = true;
-            document.getElementById("qr-reader").innerHTML = "";
-          })
-          .catch((err) => {
-            console.error("Failed to stop QR scanner:", err);
-          });
-      });
+        const result = await response.json();
+        alert(result.message || "Upload completed.");
+        form.reset();
+        photo.style.display = 'none';
+        snap.disabled = false;
+      } catch (err) {
+        alert("Upload failed: " + err.message);
+      }
     });
   </script>
 </body>
