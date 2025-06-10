@@ -41,13 +41,21 @@ async def index(request: Request):
 async def upload_image(
     user_id: str = Form(...),
     sr_no: str = Form(...),
+    meter_pos: int = Form(...),
     image: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
+
     filename = f"{user_id}_{sr_no}_{uuid4().hex}.jpg"
     file_id = upload_image_to_drive(image.file, filename)
 
-    new_record = MeterRecord(user_id=user_id, sr_no=sr_no, drive_file_id=file_id)
+    new_record = MeterRecord(
+        user_id=user_id,
+        sr_no=sr_no,
+        meter_pos=meter_pos,
+        drive_file_id=file_id
+    )
+
     db.add(new_record)
     db.commit()
 
