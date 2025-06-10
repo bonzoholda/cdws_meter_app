@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+jinja2
+aiofiles
+python-multipart
+pillow
+sqlalchemy
+python-dotenv
+httpx
+google-api-python-client
+google-auth
+google-auth-httplib2
+google-auth-oauthlib
