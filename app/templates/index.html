@@ -1,39 +1,110 @@
 <!-- app/templates/index.html -->
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CDWS Meter Entry</title>
   <link rel="stylesheet" href="static/style.css" />
   <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      padding: 0;
+      background: #f9f9f9;
+    }
+    h2, h3 {
+      text-align: center;
+    }
+    form {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin: 15px 0 5px;
+      font-weight: bold;
+    }
+    input[type=text], input[type=file], select {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      font-size: 1.1rem;
+      background-color: #2a7ae2;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover:not(:disabled) {
+      background-color: #185abc;
+    }
+    button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+    #qr-reader {
+      margin: 20px auto;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 12px rgba(0,0,0,0.15);
+    }
+    #startScanner, #stopScanner {
+      max-width: 200px;
+      margin: 10px auto;
+      display: block;
+    }
+    @media (max-width: 600px) {
+      form, #qr-reader {
+        width: 90%;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h2>Meter Record Form</h2>
+  <h2>CDWS Meter Record Form</h2>
 
   <form id="uploadForm" enctype="multipart/form-data" method="post">
-    <label>User ID:</label>
-    <input type="text" name="user_id" id="user_id" required /><br />
+    <label for="user_id">User ID:</label>
+    <input type="text" name="user_id" id="user_id" required />
 
-    <label>SR No:</label>
-    <input type="text" name="sr_no" id="sr_no" required /><br />
+    <label for="sr_no">SR No:</label>
+    <input type="text" name="sr_no" id="sr_no" required />
 
-    <label>Meter Photo:</label>
-    <input type="file" name="image" accept="image/*" capture="environment" required /><br />
+    <label for="image">Meter Photo:</label>
+    <input type="file" name="image" id="image" accept="image/*" capture="environment" required />
 
     <button type="submit">Submit</button>
   </form>
 
-  <div>
-    <h3>Scan QR</h3>
-    <select id="targetField">
+  <div style="text-align:center; margin-top: 40px;">
+    <h3>Scan QR Code</h3>
+    <select id="targetField" style="width: 150px; padding: 8px; margin-bottom: 15px;">
       <option value="user_id">User ID</option>
       <option value="sr_no">SR No</option>
     </select>
-    <div id="qr-reader" style="width: 300px; margin-top: 10px;"></div>
 
-    <button id="startScanner" style="margin-top: 10px;">Start Scanner</button>
-    <button id="stopScanner" style="margin-top: 10px;" disabled>Stop Scanner</button>
+    <div id="qr-reader"></div>
+
+    <button id="startScanner">Start Scanner</button>
+    <button id="stopScanner" disabled>Stop Scanner</button>
   </div>
 
   <script>
@@ -41,7 +112,6 @@
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
-
       try {
         const response = await fetch("/upload-image/", {
           method: "POST",
@@ -75,7 +145,6 @@
         alert("No camera found on this device.");
         return;
       }
-
       startBtn.disabled = true;
       stopBtn.disabled = false;
 
@@ -88,7 +157,7 @@
             document.getElementById(target).value = qrCodeMessage;
           },
           (errorMessage) => {
-            // ignore scan errors or log them
+            // You can log scan errors here if needed
             // console.log("QR scan error:", errorMessage);
           }
         )
@@ -101,7 +170,8 @@
     });
 
     stopBtn.addEventListener("click", () => {
-      qrReader.stop()
+      qrReader
+        .stop()
         .then(() => {
           startBtn.disabled = false;
           stopBtn.disabled = true;
