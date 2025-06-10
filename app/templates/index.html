@@ -108,79 +108,81 @@
   </div>
 
   <script>
-    const form = document.getElementById("uploadForm");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      try {
-        const response = await fetch("/upload-image/", {
-          method: "POST",
-          body: formData,
-        });
-        const result = await response.json();
-        alert(result.message || "Upload completed.");
-        form.reset();
-      } catch (error) {
-        alert("Upload failed: " + error.message);
+    document.addEventListener("DOMContentLoaded", function() {
+      // Now Html5Qrcode is guaranteed to be loaded
+
+      const form = document.getElementById("uploadForm");
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        try {
+          const response = await fetch("/upload-image/", {
+            method: "POST",
+            body: formData,
+          });
+          const result = await response.json();
+          alert(result.message || "Upload completed.");
+          form.reset();
+        } catch (error) {
+          alert("Upload failed: " + error.message);
+        }
+      });
+
+      const qrReader = new Html5Qrcode("qr-reader");
+      const startBtn = document.getElementById("startScanner");
+      const stopBtn = document.getElementById("stopScanner");
+
+      async function hasCamera() {
+        try {
+          const devices = await Html5Qrcode.getCameras();
+          return devices && devices.length > 0;
+        } catch (err) {
+          console.error("Camera check failed:", err);
+          return false;
+        }
       }
-    });
 
-    const qrReader = new Html5Qrcode("qr-reader");
-    const startBtn = document.getElementById("startScanner");
-    const stopBtn = document.getElementById("stopScanner");
+      startBtn.addEventListener("click", async () => {
+        const cameraAvailable = await hasCamera();
+        if (!cameraAvailable) {
+          alert("No camera found on this device.");
+          return;
+        }
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
 
-    async function hasCamera() {
-      try {
-        const devices = await Html5Qrcode.getCameras();
-        return devices && devices.length > 0;
-      } catch (err) {
-        console.error("Camera check failed:", err);
-        return false;
-      }
-    }
+        qrReader
+          .start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: 250 },
+            (qrCodeMessage) => {
+              const target = document.getElementById("targetField").value;
+              document.getElementById(target).value = qrCodeMessage;
+            },
+            (errorMessage) => {
+              // ignore scan errors
+            }
+          )
+          .catch((err) => {
+            console.error("Unable to start QR scanner:", err);
+            alert("Failed to start QR scanner: " + err.message);
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+          });
+      });
 
-    startBtn.addEventListener("click", async () => {
-      const cameraAvailable = await hasCamera();
-      if (!cameraAvailable) {
-        alert("No camera found on this device.");
-        return;
-      }
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-
-      qrReader
-        .start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: 250 },
-          (qrCodeMessage) => {
-            const target = document.getElementById("targetField").value;
-            document.getElementById(target).value = qrCodeMessage;
-          },
-          (errorMessage) => {
-            // You can log scan errors here if needed
-            // console.log("QR scan error:", errorMessage);
-          }
-        )
-        .catch((err) => {
-          console.error("Unable to start QR scanner:", err);
-          alert("Failed to start QR scanner: " + err.message);
-          startBtn.disabled = false;
-          stopBtn.disabled = true;
-        });
-    });
-
-    stopBtn.addEventListener("click", () => {
-      qrReader
-        .stop()
-        .then(() => {
-          startBtn.disabled = false;
-          stopBtn.disabled = true;
-          // Clear QR reader UI
-          document.getElementById("qr-reader").innerHTML = "";
-        })
-        .catch((err) => {
-          console.error("Failed to stop QR scanner:", err);
-        });
+      stopBtn.addEventListener("click", () => {
+        qrReader
+          .stop()
+          .then(() => {
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            document.getElementById("qr-reader").innerHTML = "";
+          })
+          .catch((err) => {
+            console.error("Failed to stop QR scanner:", err);
+          });
+      });
     });
   </script>
 </body>
