@@ -15,7 +15,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_INFO = json.loads(os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON"))
 FOLDER_ID = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
 
-credentials = service_account.Credentials.from_service_account_info(config.SERVICE_ACCOUNT_INFO, scopes=SCOPES)
+credentials = service_account.Credentials.from_service_account_info(SERVICE_ACCOUNT_INFO, scopes=SCOPES)
 
 drive_service = build('drive', 'v3', credentials=credentials)
 
