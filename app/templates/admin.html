@@ -1,0 +1,45 @@
+<!-- app/templates/admin.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CDWS Admin Panel</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h2>Admin Panel</h2>
+  <a href="/logout">Logout</a>
+
+  {% if records %}
+    <table>
+      <tr>
+        <th>User ID</th>
+        <th>SR No</th>
+        <th>Timestamp</th>
+        <th>Meter Photo</th>
+        <th>Enter Meter Pos</th>
+      </tr>
+      {% for record in records %}
+        <tr>
+          <td>{{ record.user_id }}</td>
+          <td>{{ record.sr_no }}</td>
+          <td>{{ record.record_timestamp }}</td>
+          <td>
+            <a href="https://drive.google.com/uc?id={{ record.drive_file_id }}" target="_blank">View Image</a>
+          </td>
+          <td>
+            <form method="post" action="/admin/update-pos">
+              <input type="number" name="meter_pos" required>
+              <input type="hidden" name="record_id" value="{{ record.id }}">
+              <button type="submit">Save</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>No pending records.</p>
+  {% endif %}
+</body>
+</html>
