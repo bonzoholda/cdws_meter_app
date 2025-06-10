@@ -108,6 +108,20 @@
     <img id="photo" alt="Meter photo preview" />
 
     <button type="button" id="snap" disabled>Take Picture</button>
+
+    <label for="meter_pos">Meter Position:</label>
+    <input
+      type="number"
+      name="meter_pos"
+      id="meter_pos"
+      required
+      min="0"
+      max="9999"
+      step="1"
+      pattern="\d+"
+      inputmode="numeric"
+    />
+    
     <button type="submit">Submit</button>
   </form>
 
