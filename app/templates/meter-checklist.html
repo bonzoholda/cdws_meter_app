@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Meter Record Checklist</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto p-6">
+        <h1 class="text-2xl font-bold mb-4">Meter Record Checklist</h1>
+
+        <form method="get" action="/meter-checklist" class="mb-4 flex flex-wrap items-end gap-4">
+            <div>
+                <label class="block text-sm font-medium">Start Date</label>
+                <input type="date" name="start_date" value="{{ start_date or '' }}"
+                       class="border border-gray-300 rounded px-3 py-1 w-48">
+            </div>
+            <div>
+                <label class="block text-sm font-medium">End Date</label>
+                <input type="date" name="end_date" value="{{ end_date or '' }}"
+                       class="border border-gray-300 rounded px-3 py-1 w-48">
+            </div>
+            <button type="submit"
+                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Filter
+            </button>
+            <a href="/meter-checklist/export?start_date={{ start_date or '' }}&end_date={{ end_date or '' }}"
+               class="ml-auto bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                Export to CSV
+            </a>
+        </form>
+
+        {% for user_id, months in grouped_data.items() %}
+            <div class="bg-white rounded-xl shadow p-4 mb-6">
+                <h2 class="text-xl font-semibold text-blue-700">User ID: {{ user_id }}</h2>
+
+                {% for month, records in months.items() %}
+                    <div class="mt-4">
+                        <h3 class="text-lg font-medium text-gray-600">Month: {{ month }}</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+                            {% for record in records %}
+                                <div class="bg-gray-50 rounded p-3 border shadow">
+                                    <p><strong>Serial No:</strong> {{ record.sr_no }}</p>
+                                    <p><strong>Meter Pos:</strong> {{ record.meter_pos }}</p>
+                                    <p><strong>Timestamp:</strong> {{ record.record_timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                                    <img class="mt-2 w-full rounded" src="https://drive.google.com/uc?id={{ record.drive_file_id }}" alt="Meter Image">
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
