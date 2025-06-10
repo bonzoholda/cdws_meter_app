@@ -43,7 +43,7 @@
                                     <p><strong>Serial No:</strong> {{ record.sr_no }}</p>
                                     <p><strong>Meter Pos:</strong> {{ record.meter_pos }}</p>
                                     <p><strong>Timestamp:</strong> {{ record.record_timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
-                                    <img class="mt-2 w-full rounded" src="https://drive.google.com/uc?id={{ record.drive_file_id }}" alt="Meter Image">
+                                    <img class="mt-2 w-full rounded" src="https://drive.google.com/uc?export=view&id={{ record.drive_file_id }}" alt="Meter Image" width="120" />
                                 </div>
                             {% endfor %}
                         </div>
