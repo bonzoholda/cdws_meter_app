@@ -3,23 +3,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>CDWS Meter Entry</title>
-  <link rel="stylesheet" href="static/style.css">
-  <script src="static/html5-qrcode.min.js"></script>
+  <link rel="stylesheet" href="static/style.css" />
+  <!-- Use CDN for html5-qrcode -->
+  <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
 </head>
 <body>
   <h2>Meter Record Form</h2>
 
   <form id="uploadForm" enctype="multipart/form-data" method="post">
     <label>User ID:</label>
-    <input type="text" name="user_id" id="user_id" required><br>
+    <input type="text" name="user_id" id="user_id" required /><br />
 
     <label>SR No:</label>
-    <input type="text" name="sr_no" id="sr_no" required><br>
+    <input type="text" name="sr_no" id="sr_no" required /><br />
 
     <label>Meter Photo:</label>
-    <input type="file" name="image" accept="image/*" capture="environment" required><br>
+    <input type="file" name="image" accept="image/*" capture="environment" required /><br />
 
     <button type="submit">Submit</button>
   </form>
@@ -30,35 +31,52 @@
       <option value="user_id">User ID</option>
       <option value="sr_no">SR No</option>
     </select>
-    <div id="qr-reader" style="width: 300px"></div>
+    <div id="qr-reader" style="width: 300px; margin-top: 10px;"></div>
+    <button id="startScanner" style="margin-top: 10px;">Start Scanner</button>
   </div>
 
   <script>
+    // Form submission
     const form = document.getElementById("uploadForm");
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
 
-      const response = await fetch("/upload-image/", {
-        method: "POST",
-        body: formData
-      });
-
-      const result = await response.json();
-      alert(result.message || "Upload completed.");
-      form.reset();
+      try {
+        const response = await fetch("/upload-image/", {
+          method: "POST",
+          body: formData,
+        });
+        const result = await response.json();
+        alert(result.message || "Upload completed.");
+        form.reset();
+      } catch (error) {
+        alert("Upload failed: " + error.message);
+      }
     });
 
+    // QR code scanner setup
     const qrReader = new Html5Qrcode("qr-reader");
-    qrReader.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 200 },
-      qrCodeMessage => {
-        const target = document.getElementById("targetField").value;
-        document.getElementById(target).value = qrCodeMessage;
-      },
-      error => { /* ignore scan errors */ }
-    );
+
+    document.getElementById("startScanner").addEventListener("click", () => {
+      qrReader
+        .start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          (qrCodeMessage) => {
+            const target = document.getElementById("targetField").value;
+            document.getElementById(target).value = qrCodeMessage;
+          },
+          (errorMessage) => {
+            // console.error only, no alert spam
+            console.error("QR scan error:", errorMessage);
+          }
+        )
+        .catch((err) => {
+          console.error("Unable to start QR scanner:", err);
+          alert("Failed to start QR scanner: " + err.message);
+        });
+    });
   </script>
 </body>
 </html>
