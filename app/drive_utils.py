@@ -2,6 +2,7 @@
 
 import io
 import os
+import json
 from PIL import Image
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -11,11 +12,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SCOPES = ['https://www.googleapis.com/auth/drive']
-SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON")
+SERVICE_ACCOUNT_INFO = json.loads(os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON"))
 FOLDER_ID = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
 
-credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+credentials = service_account.Credentials.from_service_account_info(config.SERVICE_ACCOUNT_INFO, scopes=SCOPES)
+
 drive_service = build('drive', 'v3', credentials=credentials)
 
 def compress_image(image_file, max_size_kb=150):
