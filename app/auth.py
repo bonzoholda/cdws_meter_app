@@ -3,9 +3,14 @@
 from fastapi import Request, Form
 from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
+import os
+import json
+from dotenv import load_dotenv
 
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "password123"  # Change this securely later!
+load_dotenv()
+
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 
 def add_auth(app):
     app.add_middleware(SessionMiddleware, secret_key="changeme")
