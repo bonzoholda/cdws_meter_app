@@ -1,12 +1,16 @@
 # app/main.py
 
-from fastapi import FastAPI, Request, Form, UploadFile, File, Depends
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, Request, Form, UploadFile, File, Depends, Query
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from uuid import uuid4
 import os
+from datetime import datetime
+from collections import defaultdict
+import csv
+import io
 
 from .database import Base, engine, SessionLocal
 from .models import MeterRecord
@@ -86,3 +90,65 @@ async def update_meter_pos(
         record.meter_pos = meter_pos
         db.commit()
     return RedirectResponse("/admin", status_code=302)
+
+
+@app.get("/meter-checklist", response_class=HTMLResponse)
+async def meter_checklist(request: Request,
+                          start_date: str = Query(None),
+                          end_date: str = Query(None),
+                          db: Session = Depends(get_db)):
+    query = db.query(MeterRecord)
+
+    if start_date:
+        query = query.filter(MeterRecord.record_timestamp >= datetime.fromisoformat(start_date))
+    if end_date:
+        query = query.filter(MeterRecord.record_timestamp <= datetime.fromisoformat(end_date))
+
+    records = query.order_by(MeterRecord.user_id, MeterRecord.record_timestamp).all()
+
+    grouped_data = defaultdict(lambda: defaultdict(list))
+    for record in records:
+        user_id = record.user_id
+        month_label = record.record_timestamp.strftime("%Y-%m")
+        grouped_data[user_id][month_label].append(record)
+
+    return templates.TemplateResponse("meter-checklist.html", {
+        "request": request,
+        "grouped_data": grouped_data,
+        "start_date": start_date,
+        "end_date": end_date
+    })
+
+
+@app.get("/meter-checklist/export", response_class=StreamingResponse)
+def export_meter_records(start_date: str = Query(None),
+                         end_date: str = Query(None),
+                         db: Session = Depends(get_db)):
+
+    query = db.query(MeterRecord)
+
+    if start_date:
+        query = query.filter(MeterRecord.record_timestamp >= datetime.fromisoformat(start_date))
+    if end_date:
+        query = query.filter(MeterRecord.record_timestamp <= datetime.fromisoformat(end_date))
+
+    records = query.order_by(MeterRecord.user_id, MeterRecord.record_timestamp).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["User ID", "Serial No", "Drive File ID", "Meter Pos", "Timestamp"])
+
+    for r in records:
+        writer.writerow([
+            r.user_id,
+            r.sr_no,
+            r.drive_file_id,
+            r.meter_pos,
+            r.record_timestamp.strftime("%Y-%m-%d %H:%M")
+        ])
+
+    output.seek(0)
+    headers = {
+        "Content-Disposition": "attachment; filename=meter_records.csv"
+    }
+    return StreamingResponse(output, media_type="text/csv", headers=headers)
