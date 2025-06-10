@@ -1,0 +1,90 @@
+/* app/static/style.css */
+
+body {
+  font-family: Arial, sans-serif;
+  padding: 1rem;
+  background: #f9f9f9;
+  color: #333;
+}
+
+h2, h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+form {
+  background: white;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+label {
+  display: block;
+  margin-top: 0.5rem;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 0.2rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+button {
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+  border: none;
+  transition: 0.2s;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  background: white;
+}
+
+th, td {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+@media (max-width: 600px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+
+  th {
+    display: none;
+  }
+
+  td {
+    position: relative;
+    padding-left: 50%;
+    text-align: right;
+  }
+
+  td::before {
+    position: absolute;
+    left: 0;
+    padding-left: 1rem;
+    white-space: nowrap;
+    font-weight: bold;
+  }
+
+  td:nth-of-type(1)::before { content: "User ID"; }
+  td:nth-of-type(2)::before { content: "SR No"; }
+  td:nth-of-type(3)::before { content: "Timestamp"; }
+  td:nth-of-type(4)::before { content: "Meter Photo"; }
+  td:nth-of-type(5)::before { content: "Enter Meter Pos"; }
+}
