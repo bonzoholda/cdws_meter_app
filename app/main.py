@@ -143,14 +143,42 @@ async def handle_logout(request: Request):
             db_path = os.path.abspath(os.path.join(".", parsed.path.lstrip("/")))
 
             if not os.path.exists(db_path):
-                raise FileNotFoundError(f"Database file not found at {db_path}")
+                raise FileNotFoundError(f"❌ Database file not found at {db_path}")
 
+            # 💡 Check table contents before backup
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+
+            # Check if relevant tables exist
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = {row[0] for row in cursor.fetchall()}
+
+            if "meter_records" not in tables or "data_pelanggan" not in tables:
+                print("⚠️ Tables not found, skipping backup.")
+                return response
+
+            # Check if there's actual data
+            cursor.execute("SELECT COUNT(*) FROM meter_records;")
+            meter_count = cursor.fetchone()[0]
+
+            cursor.execute("SELECT COUNT(*) FROM data_pelanggan;")
+            pelanggan_count = cursor.fetchone()[0]
+
+            conn.close()
+
+            if meter_count == 0 and pelanggan_count == 0:
+                print("⚠️ Database is empty, skipping backup.")
+                return response
+
+            # Proceed with backup
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             backup_filename = f"backup_{timestamp}.db"
+
             upload_database_backup(local_path=db_path, drive_filename=backup_filename)
             print(f"✅ Backup successful: {backup_filename}")
         else:
             print("⚠️ Skipping backup: Not a SQLite DB.")
+
     except Exception as e:
         import traceback
         print("❌ Backup failed:")
