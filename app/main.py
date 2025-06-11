@@ -47,17 +47,6 @@ def check_admin_logged_in(request: Request):
     if request.cookies.get("admin_logged_in") != "true":
         raise HTTPException(status_code=307, detail="Redirecting to login", headers={"Location": "/login"})
 
-# Only create tables if DB doesn't already exist
-if DATABASE_URL.startswith("sqlite:///"):
-    parsed = urlparse(DATABASE_URL)
-    db_path = os.path.abspath(os.path.join(".", parsed.path.lstrip("/")))
-
-    if not os.path.exists(db_path):
-        Base.metadata.create_all(engine)
-        print("✅ Tables created.")
-    else:
-        print("✅ DB exists, skipping table creation.")
-
 
 @app.on_event("startup")
 def on_startup():
