@@ -1,47 +1,53 @@
 <!-- app/templates/customer.html -->
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CDWS - Customer List</title>
-  <!-- TailwindCSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="/static/style.css" rel="stylesheet">
-
+  <link href="/static/style.css" rel="stylesheet" />
 </head>
+
 <body>
-  <h2>Daftar Pelanggan</h2>
-  <a href="/admin">Admin Dashboard</a>
+  <div class="form-wrapper space-y-6">
+    <h2>Daftar Pelanggan</h2>
 
-  <form action="/import-pelanggan" method="post" enctype="multipart/form-data">
-    <label for="csv_file">Import Pelanggan CSV:</label>
-    <input type="file" name="csv_file" accept=".csv" required>
-    <button type="submit">Upload</button>
-  </form>
+    <div class="text-sm">
+      <a href="/admin" class="text-blue-600 hover:underline">&larr; Kembali ke Admin Dashboard</a>
+    </div>
 
-  <h2>Data Pelanggan</h2>
-  <table border="1">
-    <thead>
-      <tr>
-        <th>User ID</th>
-        <th>Name</th>
-        <th>Address</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for pelanggan in pelanggan_list %}
-      <tr>
-        <td>{{ pelanggan.user_id }}</td>
-        <td>{{ pelanggan.user_name }}</td>
-        <td>{{ pelanggan.user_address }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-    
+    <form action="/import-pelanggan" method="post" enctype="multipart/form-data" class="space-y-4">
+      <div>
+        <label for="csv_file">Import Pelanggan CSV:</label>
+        <input type="file" name="csv_file" id="csv_file" accept=".csv" required />
+      </div>
+      <button type="submit">Upload</button>
+    </form>
 
-  
+    <h2>Data Pelanggan</h2>
+
+    <div class="overflow-x-auto">
+      <table class="table-auto w-full border border-gray-300 text-sm">
+        <thead class="bg-gray-100 text-left">
+          <tr>
+            <th class="border px-3 py-2">User ID</th>
+            <th class="border px-3 py-2">Name</th>
+            <th class="border px-3 py-2">Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pelanggan in pelanggan_list %}
+          <tr class="hover:bg-gray-50">
+            <td class="border px-3 py-2">{{ pelanggan.user_id }}</td>
+            <td class="border px-3 py-2">{{ pelanggan.user_name }}</td>
+            <td class="border px-3 py-2">{{ pelanggan.user_address }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </body>
 </html>
