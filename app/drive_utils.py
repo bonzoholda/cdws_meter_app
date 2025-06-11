@@ -8,6 +8,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload, MediaFileUpload, MediaIoBaseDownload
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 load_dotenv()
 
@@ -80,30 +81,27 @@ def upload_database_backup(local_path, drive_filename):
     return uploaded_file['id']
 
 
-def download_database_backup(local_path: str = "app/database/app.db"):
-    # List all files in the backup folder with names starting with 'backup_'
-    response = drive_service.files().list(
-        q=f"'{BACKUP_FOLDER_ID}' in parents and name contains 'backup_'",
-        orderBy="createdTime desc",
-        spaces='drive',
-        fields="files(id, name, createdTime)"
-    ).execute()
-
+def restore_database_from_drive(filename: str):
+    # Step 1: Search for the backup file by name
+    query = f"'{BACKUP_FOLDER_ID}' in parents and name = '{filename}' and trashed = false"
+    response = drive_service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
     files = response.get('files', [])
+
     if not files:
-        raise FileNotFoundError("No backup files found in Google Drive.")
+        raise FileNotFoundError(f"No backup file named {filename} found in Drive.")
 
-    latest_file = files[0]
-    file_id = latest_file['id']
-    file_name = latest_file['name']
+    file_id = files[0]['id']
 
-    print(f"Restoring from: {file_name}")
+    # Step 2: Resolve correct DB path from DATABASE_URL
+    from app.database import DATABASE_URL
+    if DATABASE_URL.startswith("sqlite:///"):
+        parsed = urlparse(DATABASE_URL)
+        db_path = os.path.abspath(os.path.join(".", parsed.path.lstrip("/")))
+    else:
+        raise RuntimeError("Restore only supports SQLite databases.")
 
+    # Step 3: Download and overwrite local DB
     request = drive_service.files().get_media(fileId=file_id)
-    with open(local_path, 'wb') as f:
-        downloader = MediaIoBaseDownload(f, request)
-        done = False
-        while not done:
-            _, done = downloader.next_chunk()
-    return True
+    fh = io.FileIO(db_path, 'wb')
+    downloader = MediaIoBaseDownload(fh, request)
 
