@@ -1,0 +1,43 @@
+<!-- app/templates/customer.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>CDWS Customer List</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h2>Daftar Pelanggan</h2>
+  <a href="/admin">Admin Dashboard</a>
+
+  <form action="/import-pelanggan" method="post" enctype="multipart/form-data">
+    <label for="csv_file">Import Pelanggan CSV:</label>
+    <input type="file" name="csv_file" accept=".csv" required>
+    <button type="submit">Upload</button>
+  </form>
+
+  <h2>Data Pelanggan</h2>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Name</th>
+        <th>Address</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pelanggan in pelanggan_list %}
+      <tr>
+        <td>{{ pelanggan.user_id }}</td>
+        <td>{{ pelanggan.user_name }}</td>
+        <td>{{ pelanggan.user_address }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+    
+
+  
+</body>
+</html>
