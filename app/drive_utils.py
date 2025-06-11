@@ -10,6 +10,8 @@ from googleapiclient.http import MediaIoBaseUpload, MediaFileUpload, MediaIoBase
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from app.database import DATABASE_URL
+import stat
+
 
 load_dotenv()
 
