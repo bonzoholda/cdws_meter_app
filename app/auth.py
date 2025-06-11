@@ -25,7 +25,7 @@ async def login_form(request: Request):
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
     if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
         request.session["logged_in"] = True
-        return RedirectResponse("/admin", status_code=302)
+        return RedirectResponse("/", status_code=302)
     return RedirectResponse("/login", status_code=302)
 
 async def logout(request: Request):
