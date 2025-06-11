@@ -1,295 +1,137 @@
 <!-- app/templates/admin.html -->
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CDWS Admin Panel</title>
-  <style>
-    /* Reset */
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: #f9fafb;
-      color: #333;
-      line-height: 1.6;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Navbar */
-    nav {
-      position: sticky;
-      top: 0;
-      background: #2c3e50;
-      padding: 0.75rem 1rem;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 1rem;
-      z-index: 100;
-      box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
-    }
-
-    nav a {
-      color: #ecf0f1;
-      text-decoration: none;
-      font-weight: 600;
-      padding: 0.5rem 0.75rem;
-      border-radius: 4px;
-      transition: background 0.3s ease;
-    }
-    nav a:hover,
-    nav a:focus {
-      background: #34495e;
-      outline: none;
-    }
-
-    /* Container */
-    main {
-      flex-grow: 1;
-      max-width: 960px;
-      margin: 1.5rem auto;
-      padding: 0 1rem;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
-    }
-
-    h2, h3 {
-      color: #2c3e50;
-      margin-top: 0;
-    }
-
-    /* Form styles */
-    form {
-      margin: 1rem 0 2rem;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    form label {
-      font-weight: 600;
-      flex: 1 0 150px;
-    }
-
-    form input[type="file"],
-    form input[type="number"],
-    form button {
-      flex: 2 1 250px;
-      padding: 0.5rem 0.75rem;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      transition: border-color 0.3s ease;
-    }
-
-    form input[type="file"]:focus,
-    form input[type="number"]:focus {
-      outline: none;
-      border-color: #2980b9;
-    }
-
-    form button {
-      cursor: pointer;
-      background: #2980b9;
-      border: none;
-      color: white;
-      font-weight: 700;
-      transition: background 0.3s ease;
-      flex: 0 0 auto;
-    }
-
-    form button:hover,
-    form button:focus {
-      background: #1c5980;
-      outline: none;
-    }
-
-    /* Table styles */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 2rem;
-    }
-
-    th, td {
-      text-align: left;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid #e1e4e8;
-      vertical-align: middle;
-    }
-
-    th {
-      background-color: #f5f7fa;
-      font-weight: 600;
-      color: #2c3e50;
-    }
-
-    tr:hover {
-      background-color: #f0f4f8;
-    }
-
-    /* Nested form in table */
-    td form {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: nowrap;
-      align-items: center;
-    }
-
-    td form input[type="number"] {
-      width: 80px;
-      flex: none;
-    }
-
-    td form button {
-      flex: none;
-      padding: 0.35rem 0.75rem;
-      font-size: 0.9rem;
-    }
-
-    /* Responsive */
-    @media (max-width: 720px) {
-      nav {
-        justify-content: center;
-        gap: 0.5rem;
-      }
-      form {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      form label, 
-      form input[type="file"], 
-      form button {
-        flex: 1 1 100%;
-      }
-      td form {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      td form input[type="number"],
-      td form button {
-        width: 100%;
-      }
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
-      thead tr {
-        display: none;
-      }
-      tr {
-        margin-bottom: 1.25rem;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        padding: 0.75rem;
-        background: #fff;
-      }
-      td {
-        border: none;
-        padding: 0.5rem 0.75rem;
-        position: relative;
-        padding-left: 50%;
-        white-space: pre-wrap;
-        text-align: left;
-      }
-      td::before {
-        position: absolute;
-        top: 0.5rem;
-        left: 0.75rem;
-        width: 45%;
-        white-space: nowrap;
-        font-weight: 600;
-        color: #2c3e50;
-      }
-      td:nth-of-type(1)::before { content: "User ID"; }
-      td:nth-of-type(2)::before { content: "SR No"; }
-      td:nth-of-type(3)::before { content: "Timestamp"; }
-      td:nth-of-type(4)::before { content: "Meter Photo"; }
-      td:nth-of-type(5)::before { content: "Enter Meter Pos"; }
-    }
-
-    /* Link button style for images */
-    a {
-      color: #2980b9;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    a:hover,
-    a:focus {
-      text-decoration: underline;
-      outline: none;
-    }
-  </style>
+  <!-- TailwindCSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <nav>
-    <a href="/">Baca Meter</a>
-    <a href="/meter-checklist">Meter Checklist</a>
-    <a href="/customer">Daftar Pelanggan</a>
-    <a href="/logout">Logout</a>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="bg-blue-900 text-white sticky top-0 z-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-14">
+        <div class="flex space-x-4">
+          <a href="/" class="hover:bg-blue-800 px-3 py-2 rounded font-semibold">Baca Meter</a>
+          <a href="/meter-checklist" class="hover:bg-blue-800 px-3 py-2 rounded font-semibold">Meter Checklist</a>
+          <a href="/customer" class="hover:bg-blue-800 px-3 py-2 rounded font-semibold">Daftar Pelanggan</a>
+        </div>
+        <div>
+          <a href="/logout" class="hover:bg-blue-800 px-3 py-2 rounded font-semibold">Logout</a>
+        </div>
+      </div>
+    </div>
   </nav>
 
-  <main>
-    <h2>Admin Panel</h2>
+  <!-- Main Content -->
+  <main class="flex-grow max-w-4xl mx-auto p-6 bg-white mt-6 mb-12 rounded-lg shadow-md">
 
-    <form action="/import-pelanggan" method="post" enctype="multipart/form-data" aria-label="Import Pelanggan CSV">
-      <label for="csv_file">Import Pelanggan CSV:</label>
-      <input id="csv_file" type="file" name="csv_file" accept=".csv" required />
-      <button type="submit">Upload</button>
+    <h2 class="text-2xl font-bold text-blue-900 mb-6">Admin Panel</h2>
+
+    <!-- Import Pelanggan CSV Form -->
+    <form
+      action="/import-pelanggan"
+      method="post"
+      enctype="multipart/form-data"
+      aria-label="Import Pelanggan CSV"
+      class="flex flex-col sm:flex-row items-center gap-4 mb-8"
+    >
+      <label for="csv_file" class="font-semibold text-gray-700 min-w-[160px]">Import Pelanggan CSV:</label>
+      <input
+        id="csv_file"
+        type="file"
+        name="csv_file"
+        accept=".csv"
+        required
+        class="block w-full sm:w-auto text-gray-700 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+      />
+      <button
+        type="submit"
+        class="bg-blue-700 hover:bg-blue-800 text-white px-5 py-2 rounded font-semibold transition-colors duration-200"
+      >
+        Upload
+      </button>
     </form>
 
-    <section aria-labelledby="restore-heading">
-      <h3 id="restore-heading">Restore Latest Database Backup</h3>
+    <!-- Restore Latest Backup -->
+    <section aria-labelledby="restore-heading" class="mb-10">
+      <h3 id="restore-heading" class="text-xl font-semibold text-blue-900 mb-3">Restore Latest Database Backup</h3>
       <form action="/restore-latest-backup" method="post">
-        <button type="submit">Restore Latest Backup</button>
+        <button
+          type="submit"
+          class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded font-semibold transition-colors duration-200"
+        >
+          Restore Latest Backup
+        </button>
       </form>
     </section>
 
+    <!-- Records Table -->
     {% if records %}
-      <section aria-label="Pending Meter Records">
-        <table>
-          <thead>
-            <tr>
-              <th>User ID</th>
-              <th>SR No</th>
-              <th>Timestamp</th>
-              <th>Meter Photo</th>
-              <th>Enter Meter Pos</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for record in records %}
-              <tr>
-                <td>{{ record.user_id }}</td>
-                <td>{{ record.sr_no }}</td>
-                <td>{{ record.record_timestamp }}</td>
-                <td>
-                  <a href="https://drive.google.com/uc?id={{ record.drive_file_id }}" target="_blank" rel="noopener noreferrer">View Image</a>
-                </td>
-                <td>
-                  <form method="post" action="/admin/update-pos" aria-label="Update meter position for {{ record.user_id }}">
-                    <input type="number" name="meter_pos" required aria-required="true" aria-label="Enter meter position" />
-                    <input type="hidden" name="record_id" value="{{ record.id }}" />
-                    <button type="submit">Save</button>
-                  </form>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </section>
+    <section aria-label="Pending Meter Records" class="overflow-x-auto">
+      <table class="min-w-full table-auto border-collapse border border-gray-300 shadow-sm rounded-lg">
+        <thead class="bg-blue-100 text-blue-900">
+          <tr>
+            <th class="border border-gray-300 px-4 py-2 text-left font-semibold">User ID</th>
+            <th class="border border-gray-300 px-4 py-2 text-left font-semibold">SR No</th>
+            <th class="border border-gray-300 px-4 py-2 text-left font-semibold">Timestamp</th>
+            <th class="border border-gray-300 px-4 py-2 text-left font-semibold">Meter Photo</th>
+            <th class="border border-gray-300 px-4 py-2 text-left font-semibold">Enter Meter Pos</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white">
+          {% for record in records %}
+          <tr class="hover:bg-blue-50">
+            <td class="border border-gray-300 px-4 py-2 whitespace-nowrap">{{ record.user_id }}</td>
+            <td class="border border-gray-300 px-4 py-2 whitespace-nowrap">{{ record.sr_no }}</td>
+            <td class="border border-gray-300 px-4 py-2 whitespace-nowrap">{{ record.record_timestamp }}</td>
+            <td class="border border-gray-300 px-4 py-2 whitespace-nowrap">
+              <a
+                href="https://drive.google.com/uc?id={{ record.drive_file_id }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-blue-700 hover:underline font-semibold"
+              >
+                View Image
+              </a>
+            </td>
+            <td class="border border-gray-300 px-4 py-2 whitespace-nowrap">
+              <form
+                method="post"
+                action="/admin/update-pos"
+                class="flex gap-2"
+                aria-label="Update meter position for {{ record.user_id }}"
+              >
+                <input
+                  type="number"
+                  name="meter_pos"
+                  required
+                  aria-required="true"
+                  aria-label="Enter meter position"
+                  class="w-24 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+                <input type="hidden" name="record_id" value="{{ record.id }}" />
+                <button
+                  type="submit"
+                  class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded font-semibold transition-colors duration-200"
+                >
+                  Save
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
     {% else %}
-      <p>No pending records.</p>
+      <p class="text-center text-gray-600 mt-8">No pending records.</p>
     {% endif %}
   </main>
+
 </body>
 </html>
