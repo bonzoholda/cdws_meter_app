@@ -35,5 +35,5 @@ a {
 
 /* New reusable form container style */
 .form-container {
-  @apply bg-white p-6 rounded-lg shadow-md w-full max-w-sm;
+  @apply bg-gray-80 p-6 rounded-lg shadow-md w-90% max-w-sm;
 }
