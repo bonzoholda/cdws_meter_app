@@ -90,7 +90,8 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
 
-    check_admin_logged_in(request)
+    if not is_logged_in(request):
+        return RedirectResponse("/login")
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/upload-image/")
