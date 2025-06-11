@@ -156,15 +156,16 @@ async def handle_logout(request: Request):
 
 
 
-
-@app.post("/restore-db")
-def restore_db():
+@app.get("/restore-backup")
+def restore_backup_route(filename: str = Query(...)):
     try:
-        download_database_backup()
-        print("Database successfully restored from latest backup.")
+        restored_path = restore_database_from_drive(filename)
+        print(f"✅ Restored DB from Google Drive to: {restored_path}")
+        return RedirectResponse(url="/admin", status_code=303)
     except Exception as e:
-        print(f"Restore failed: {e}")
-    return RedirectResponse("/admin", status_code=303)
+        print(f"❌ Restore failed: {e}")
+        return HTMLResponse(content=f"Restore failed: {e}", status_code=500)
+
 
 
 @app.get("/admin", response_class=HTMLResponse)
