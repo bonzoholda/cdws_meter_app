@@ -68,6 +68,14 @@ async def import_pelanggan_csv(
     return RedirectResponse(url="/admin", status_code=303)
 
 
+@app.get("/customer")
+def admin_dashboard(request: Request, db: Session = Depends(get_db)):
+    pelanggan_list = db.query(DataPelanggan).all()
+    return templates.TemplateResponse("customer.html", {
+        "request": request,
+        "pelanggan_list": pelanggan_list
+    })
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
