@@ -168,6 +168,10 @@ def restore_latest_backup():
             raise Exception("No backup file found in Google Drive.")
         restored_path = restore_database_from_drive(latest_file)
         print(f"✅ Restored from latest backup: {latest_file}")
+
+        # Ensure missing tables like meter_records are created
+        Base.metadata.create_all(bind=engine)
+        
         return RedirectResponse(url="/admin", status_code=303)
     except Exception as e:
         print(f"❌ Restore failed: {e}")
