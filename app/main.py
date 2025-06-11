@@ -116,13 +116,19 @@ async def handle_login(request: Request, username: str = Form(...), password: st
 
 @app.get("/logout")
 async def handle_logout(request: Request):
-    # Perform logout logic (e.g., clear session)
     response = await logout(request)
 
-    # Create timestamped backup filename
+    # Parse DB path from DATABASE_URL
+    if DATABASE_URL.startswith("sqlite:///"):
+        parsed = urlparse(DATABASE_URL)
+        db_path = os.path.abspath(os.path.join(".", parsed.path.lstrip("/")))
+    else:
+        print("Skipping backup: Not a SQLite DB.")
+        return response
+
+    # Timestamped filename
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     backup_filename = f"backup_{timestamp}.db"
-    db_path = os.path.join("app", "database", "app.db")
 
     try:
         upload_database_backup(local_path=db_path, drive_filename=backup_filename)
@@ -131,6 +137,8 @@ async def handle_logout(request: Request):
         print(f"Backup failed: {e}")
 
     return response
+
+
 
 @app.post("/restore-db")
 def restore_db():
