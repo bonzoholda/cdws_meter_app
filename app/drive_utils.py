@@ -113,12 +113,19 @@ def restore_database_from_drive(filename: str):
     fh = io.FileIO(db_path, 'wb')
     downloader = MediaIoBaseDownload(fh, request)
 
+    
     done = False
     while not done:
         status, done = downloader.next_chunk()
         if status:
             print(f"⬇️ Download progress: {int(status.progress() * 100)}%")
+    
+    fh.close()
 
+    # ✅ Step 5: Set correct permissions (read-write for owner)
+    os.chmod(db_path, stat.S_IRUSR | stat.S_IWUSR)  # 0o600
+    print(f"✅ Restored DB and set writable permissions at {db_path}")
+    
     print(f"✅ Restore complete: {filename}")
 
 
