@@ -202,7 +202,7 @@ def restore_latest_backup():
         print(f"✅ Restored from latest backup: {latest_file}")
 
         # Ensure missing tables like meter_records are created
-        Base.metadata.create_all(bind=engine)
+        #Base.metadata.create_all(bind=engine)
         
         return RedirectResponse(url="/admin", status_code=303)
     except Exception as e:
