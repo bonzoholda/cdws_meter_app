@@ -4,90 +4,36 @@
 
 /* ----- CUSTOM BASE STYLES ----- */
 
+/* style.css */
+
 body {
-  @apply bg-gray-50 text-gray-800 font-sans p-4;
+  @apply bg-gray-100 min-h-screen flex items-center justify-center p-4;
 }
 
-/* Headings */
-h1, h2, h3, h4 {
-  @apply text-center font-semibold text-gray-800 mb-4;
-}
-
-h1 {
-  @apply text-3xl;
-}
 h2 {
-  @apply text-2xl;
-}
-h3 {
-  @apply text-xl;
+  @apply text-2xl font-semibold text-center mb-4;
 }
 
-/* Labels */
 label {
-  @apply block font-medium text-sm mb-1 mt-4;
+  @apply block text-sm font-medium mb-1;
 }
 
-/* Inputs, Selects, Buttons */
 input[type="text"],
-input[type="number"],
+input[type="password"],
 input[type="file"],
 select {
-  @apply w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base;
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500;
 }
 
 button {
-  @apply px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all ease-in-out duration-150;
+  @apply w-full mt-4 bg-blue-600 text-white py-2 rounded hover:bg-blue-700;
 }
 
-/* Secondary buttons */
-button.secondary {
-  @apply bg-gray-400 hover:bg-gray-500;
-}
-
-/* Danger buttons */
-button.danger {
-  @apply bg-red-600 hover:bg-red-700;
-}
-
-/* Tables */
-table {
-  @apply w-full border border-gray-300 rounded-md mt-6 text-sm;
-}
-th {
-  @apply bg-gray-100 text-left px-4 py-2 border-b;
-}
-td {
-  @apply px-4 py-2 border-b;
-}
-
-/* Links */
 a {
-  @apply text-blue-600 hover:text-blue-800 underline;
+  @apply text-blue-600 hover:underline;
 }
 
-/* QR and Camera layout */
-#qr-reader,
-#video,
-#photo {
-  @apply mx-auto w-full max-w-xs rounded-lg border border-gray-300 my-2;
-}
-
-#snap,
-#start-qr-btn,
-#stop-qr-btn {
-  @apply w-full text-white font-medium py-2 px-4 rounded mt-2;
-}
-
-#start-qr-btn {
-  @apply bg-green-600 hover:bg-green-700;
-}
-
-#stop-qr-btn {
-  @apply bg-red-600 hover:bg-red-700;
-}
-
-/* Responsive form container */
-.form-wrapper {
-  @apply max-w-md mx-auto bg-white shadow-md rounded-lg p-4;
+/* New reusable form container style */
+.form-container {
+  @apply bg-white p-6 rounded-lg shadow-md w-full max-w-sm;
 }
