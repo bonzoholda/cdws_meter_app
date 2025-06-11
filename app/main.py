@@ -16,7 +16,7 @@ from io import StringIO
 
 from .database import Base, engine, SessionLocal, DATABASE_URL
 from .models import MeterRecord, DataPelanggan
-from .drive_utils import upload_image_to_drive, upload_database_backup, restore_database_from_drive
+from .drive_utils import upload_image_to_drive, upload_database_backup, restore_database_from_drive, get_latest_backup_file
 from .auth import add_auth, is_logged_in, login_form, login, logout
 from urllib.parse import urlparse
 
@@ -156,11 +156,14 @@ async def handle_logout(request: Request):
 
 
 
-@app.post("/restore-backup")
-async def restore_backup_route(request: Request, filename: str = Form(...)):
+@app.post("/restore-latest-backup")
+def restore_latest_backup():
     try:
-        restored_path = restore_database_from_drive(filename)
-        print(f"✅ Restored DB from Google Drive to: {restored_path}")
+        latest_file = get_latest_backup_file()
+        if not latest_file:
+            raise Exception("No backup file found in Google Drive.")
+        restored_path = restore_database_from_drive(latest_file)
+        print(f"✅ Restored from latest backup: {latest_file}")
         return RedirectResponse(url="/admin", status_code=303)
     except Exception as e:
         print(f"❌ Restore failed: {e}")
