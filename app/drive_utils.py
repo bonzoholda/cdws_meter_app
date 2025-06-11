@@ -113,20 +113,50 @@ def restore_database_from_drive(filename: str):
     fh = io.FileIO(db_path, 'wb')
     downloader = MediaIoBaseDownload(fh, request)
 
-    
     done = False
     while not done:
         status, done = downloader.next_chunk()
         if status:
             print(f"⬇️ Download progress: {int(status.progress() * 100)}%")
-    
+
     fh.close()
 
-    # ✅ Step 5: Set correct permissions (read-write for owner)
-    os.chmod(db_path, stat.S_IRUSR | stat.S_IWUSR)  # 0o600
+    # Step 5: Set correct file permissions
+    os.chmod(db_path, stat.S_IRUSR | stat.S_IWUSR)
     print(f"✅ Restored DB and set writable permissions at {db_path}")
-    
+
+    # ✅ Step 6: Verify table contents
+    import sqlite3
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = {row[0] for row in cursor.fetchall()}
+        print(f"📦 Tables found: {tables}")
+
+        if "data_pelanggan" in tables:
+            cursor.execute("SELECT COUNT(*) FROM data_pelanggan;")
+            count = cursor.fetchone()[0]
+            print(f"✅ data_pelanggan rows restored: {count}")
+        else:
+            print("⚠️ Table 'data_pelanggan' not found.")
+
+        if "meter_records" in tables:
+            cursor.execute("SELECT COUNT(*) FROM meter_records;")
+            count = cursor.fetchone()[0]
+            print(f"✅ meter_records rows restored: {count}")
+        else:
+            print("⚠️ Table 'meter_records' not found.")
+
+        conn.close()
+    except Exception as e:
+        print("❌ Error verifying restored database:")
+        import traceback
+        traceback.print_exc()
+
     print(f"✅ Restore complete: {filename}")
+
 
 
 def get_latest_backup_file():
