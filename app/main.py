@@ -37,7 +37,7 @@ def get_db():
 
 router = APIRouter()
 
-@router.post("/import-pelanggan")
+@app.post("/import-pelanggan")
 async def import_pelanggan_csv(
     csv_file: UploadFile = File(...),
     db: Session = Depends(get_db)
