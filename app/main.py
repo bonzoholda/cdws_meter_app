@@ -132,6 +132,16 @@ async def handle_logout(request: Request):
 
     return response
 
+@app.post("/restore-db")
+def restore_db():
+    try:
+        download_database_backup()
+        print("Database successfully restored from latest backup.")
+    except Exception as e:
+        print(f"Restore failed: {e}")
+    return RedirectResponse("/admin", status_code=303)
+
+
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     if not is_logged_in(request):
