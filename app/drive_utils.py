@@ -11,6 +11,8 @@ from dotenv import load_dotenv
 from urllib.parse import urlparse
 from app.database import DATABASE_URL
 import stat
+from app.database import engine, SessionLocal, Base  # <- ADD THIS
+from sqlalchemy import inspect  # <- For table check/debug
 
 
 load_dotenv()
