@@ -105,3 +105,19 @@ def restore_database_from_drive(filename: str):
     fh = io.FileIO(db_path, 'wb')
     downloader = MediaIoBaseDownload(fh, request)
 
+
+def get_latest_backup_file():
+    """Return the name of the latest .db backup file in BACKUP_FOLDER_ID."""
+    results = drive_service.files().list(
+        q=f"'{BACKUP_FOLDER_ID}' in parents and name contains '.db'",
+        spaces='drive',
+        fields="files(id, name, createdTime)",
+        orderBy="createdTime desc",
+        pageSize=1
+    ).execute()
+
+    files = results.get("files", [])
+    if files:
+        return files[0]["name"]
+    return None
+
