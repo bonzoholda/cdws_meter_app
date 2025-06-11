@@ -80,16 +80,25 @@ def upload_database_backup(local_path: str, drive_filename: str = "backup_latest
     ).execute()
     return file.get('id')
 
-def download_database_backup(drive_filename: str = "backup_latest.db", local_path: str = "app/database/app.db"):
+def download_database_backup(local_path: str = "app/database/app.db"):
+    # List all files in the backup folder with names starting with 'backup_'
     response = drive_service.files().list(
-        q=f"'{BACKUP_FOLDER_ID}' in parents and name='{drive_filename}'",
-        spaces='drive'
+        q=f"'{BACKUP_FOLDER_ID}' in parents and name contains 'backup_'",
+        orderBy="createdTime desc",
+        spaces='drive',
+        fields="files(id, name, createdTime)"
     ).execute()
+
     files = response.get('files', [])
     if not files:
-        raise FileNotFoundError("Backup not found on Google Drive.")
+        raise FileNotFoundError("No backup files found in Google Drive.")
 
-    file_id = files[0]['id']
+    latest_file = files[0]
+    file_id = latest_file['id']
+    file_name = latest_file['name']
+
+    print(f"Restoring from: {file_name}")
+
     request = drive_service.files().get_media(fileId=file_id)
     with open(local_path, 'wb') as f:
         downloader = MediaIoBaseDownload(f, request)
@@ -97,3 +106,4 @@ def download_database_backup(drive_filename: str = "backup_latest.db", local_pat
         while not done:
             _, done = downloader.next_chunk()
     return True
+
