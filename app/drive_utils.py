@@ -58,27 +58,27 @@ def upload_image_to_drive(image_file, filename):
 
 # --------- DATABASE BACKUP FUNCTIONS ----------
 
-def upload_database_backup(local_path: str, drive_filename: str = "backup_latest.db"):
-    file_metadata = {
-        'name': drive_filename,
-        'parents': [BACKUP_FOLDER_ID]
-    }
-    media = MediaFileUpload(local_path, mimetype='application/x-sqlite3', resumable=True)
+def upload_database_backup(local_path, drive_filename):
+    if not os.path.exists(local_path):
+        raise FileNotFoundError(f"Database file not found at {local_path}")
 
-    # Remove existing backup if it exists
-    response = drive_service.files().list(
-        q=f"'{BACKUP_FOLDER_ID}' in parents and name='{drive_filename}'",
-        spaces='drive'
-    ).execute()
-    for file in response.get('files', []):
-        drive_service.files().delete(fileId=file['id']).execute()
+    # Read DB file in binary mode for reliable upload
+    with open(local_path, "rb") as f:
+        media = MediaIoBaseUpload(f, mimetype='application/x-sqlite3')
 
-    file = drive_service.files().create(
-        body=file_metadata,
-        media_body=media,
-        fields='id'
-    ).execute()
-    return file.get('id')
+        file_metadata = {
+            'name': drive_filename,
+            'parents': [BACKUP_FOLDER_ID]
+        }
+
+        uploaded_file = drive_service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id'
+        ).execute()
+
+    return uploaded_file['id']
+
 
 def download_database_backup(local_path: str = "app/database/app.db"):
     # List all files in the backup folder with names starting with 'backup_'
