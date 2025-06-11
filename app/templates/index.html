@@ -91,7 +91,111 @@
   <hr class="w-full max-w-md my-8 border-gray-300" />
 
   <script>
-    // Your existing JS code here unchanged
+    // ----------- Camera photo capture setup -----------
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const photo = document.getElementById('photo');
+    const snap = document.getElementById('snap');
+    let stream = null;
+
+    async function startCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
+        snap.disabled = false;
+      } catch (err) {
+        alert("Error accessing camera: " + err.message);
+        snap.disabled = true;
+      }
+    }
+
+    snap.addEventListener('click', () => {
+      const context = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL('image/jpeg');
+      photo.src = dataUrl;
+      photo.style.display = 'block';
+    });
+
+    startCamera();
+
+    // ----------- QR Scanner setup -----------
+    let qrScanner = null;
+    const qrReaderElem = document.getElementById("qr-reader");
+    const startQrBtn = document.getElementById("start-qr-btn");
+    const stopQrBtn = document.getElementById("stop-qr-btn");
+
+    startQrBtn.addEventListener("click", () => {
+      if (qrScanner) return; // already running
+
+      qrScanner = new Html5Qrcode("qr-reader");
+      qrScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        qrCodeMessage => {
+          const target = document.getElementById("targetField").value;
+          document.getElementById(target).value = qrCodeMessage;
+        },
+        errorMessage => {
+          // ignore scan errors
+        }
+      ).then(() => {
+        startQrBtn.disabled = true;
+        stopQrBtn.disabled = false;
+      }).catch(err => {
+        alert("Failed to start QR scanner: " + err);
+      });
+    });
+
+    stopQrBtn.addEventListener("click", () => {
+      if (!qrScanner) return;
+
+      qrScanner.stop().then(() => {
+        qrScanner.clear();
+        qrScanner = null;
+        startQrBtn.disabled = false;
+        stopQrBtn.disabled = true;
+      }).catch(err => {
+        alert("Failed to stop QR scanner: " + err);
+      });
+    });
+
+    // ----------- Form submission with captured photo -----------
+
+    const form = document.getElementById("uploadForm");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+
+      if (photo.src) {
+        // Convert base64 dataURL to Blob and append as "image"
+        const res = await fetch(photo.src);
+        const blob = await res.blob();
+        formData.set("image", blob, "meter_photo.jpg");
+      } else {
+        alert("Please take a picture of the meter.");
+        return;
+      }
+
+      try {
+        const response = await fetch("/upload-image/", {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+        alert(result.message || "Upload completed.");
+        form.reset();
+        photo.style.display = 'none';
+        snap.disabled = false;
+      } catch (err) {
+        alert("Upload failed: " + err.message);
+      }
+    });
   </script>
 </body>
 </html>
