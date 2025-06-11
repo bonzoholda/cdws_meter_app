@@ -1,90 +1,93 @@
-/* app/static/style.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ----- CUSTOM BASE STYLES ----- */
 
 body {
-  font-family: Arial, sans-serif;
-  padding: 1rem;
-  background: #f9f9f9;
-  color: #333;
+  @apply bg-gray-50 text-gray-800 font-sans p-4;
 }
 
-h2, h3 {
-  text-align: center;
-  margin-bottom: 1rem;
+/* Headings */
+h1, h2, h3, h4 {
+  @apply text-center font-semibold text-gray-800 mb-4;
 }
 
-form {
-  background: white;
-  padding: 1rem;
-  margin-bottom: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+h1 {
+  @apply text-3xl;
+}
+h2 {
+  @apply text-2xl;
+}
+h3 {
+  @apply text-xl;
 }
 
+/* Labels */
 label {
-  display: block;
-  margin-top: 0.5rem;
+  @apply block font-medium text-sm mb-1 mt-4;
 }
 
-input, select, button {
-  width: 100%;
-  padding: 0.6rem;
-  margin-top: 0.2rem;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+/* Inputs, Selects, Buttons */
+input[type="text"],
+input[type="number"],
+input[type="file"],
+select {
+  @apply w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base;
 }
 
 button {
-  background-color: #3498db;
-  color: white;
-  cursor: pointer;
-  border: none;
-  transition: 0.2s;
+  @apply px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all ease-in-out duration-150;
 }
 
-button:hover {
-  background-color: #2980b9;
+/* Secondary buttons */
+button.secondary {
+  @apply bg-gray-400 hover:bg-gray-500;
 }
 
+/* Danger buttons */
+button.danger {
+  @apply bg-red-600 hover:bg-red-700;
+}
+
+/* Tables */
 table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-  background: white;
+  @apply w-full border border-gray-300 rounded-md mt-6 text-sm;
+}
+th {
+  @apply bg-gray-100 text-left px-4 py-2 border-b;
+}
+td {
+  @apply px-4 py-2 border-b;
 }
 
-th, td {
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  text-align: left;
+/* Links */
+a {
+  @apply text-blue-600 hover:text-blue-800 underline;
 }
 
-@media (max-width: 600px) {
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
+/* QR and Camera layout */
+#qr-reader,
+#video,
+#photo {
+  @apply mx-auto w-full max-w-xs rounded-lg border border-gray-300 my-2;
+}
 
-  th {
-    display: none;
-  }
+#snap,
+#start-qr-btn,
+#stop-qr-btn {
+  @apply w-full text-white font-medium py-2 px-4 rounded mt-2;
+}
 
-  td {
-    position: relative;
-    padding-left: 50%;
-    text-align: right;
-  }
+#start-qr-btn {
+  @apply bg-green-600 hover:bg-green-700;
+}
 
-  td::before {
-    position: absolute;
-    left: 0;
-    padding-left: 1rem;
-    white-space: nowrap;
-    font-weight: bold;
-  }
+#stop-qr-btn {
+  @apply bg-red-600 hover:bg-red-700;
+}
 
-  td:nth-of-type(1)::before { content: "User ID"; }
-  td:nth-of-type(2)::before { content: "SR No"; }
-  td:nth-of-type(3)::before { content: "Timestamp"; }
-  td:nth-of-type(4)::before { content: "Meter Photo"; }
-  td:nth-of-type(5)::before { content: "Enter Meter Pos"; }
+/* Responsive form container */
+.form-wrapper {
+  @apply max-w-md mx-auto bg-white shadow-md rounded-lg p-4;
 }
