@@ -16,7 +16,7 @@ from io import StringIO
 
 from .database import Base, engine, SessionLocal
 from .models import MeterRecord, DataPelanggan
-from .drive_utils import upload_image_to_drive
+from .drive_utils import upload_image_to_drive, upload_database_backup, download_database_backup
 from .auth import add_auth, is_logged_in, login_form, login, logout
 
 Base.metadata.create_all(bind=engine)
@@ -116,7 +116,21 @@ async def handle_login(request: Request, username: str = Form(...), password: st
 
 @app.get("/logout")
 async def handle_logout(request: Request):
-    return await logout(request)
+    # Perform logout logic (e.g., clear session)
+    response = await logout(request)
+
+    # Create timestamped backup filename
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    backup_filename = f"backup_{timestamp}.db"
+    db_path = os.path.join("app", "database", "app.db")
+
+    try:
+        upload_database_backup(local_path=db_path, drive_filename=backup_filename)
+        print(f"Backup successful: {backup_filename}")
+    except Exception as e:
+        print(f"Backup failed: {e}")
+
+    return response
 
 @app.get("/admin", response_class=HTMLResponse)
 async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
