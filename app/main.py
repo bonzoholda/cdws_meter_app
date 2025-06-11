@@ -14,7 +14,7 @@ import csv
 import io
 from io import StringIO
 
-from .database import Base, engine, SessionLocal
+from .database import Base, engine, SessionLocal, DATABASE_URL
 from .models import MeterRecord, DataPelanggan
 from .drive_utils import upload_image_to_drive, upload_database_backup, download_database_backup
 from .auth import add_auth, is_logged_in, login_form, login, logout
@@ -119,24 +119,23 @@ async def handle_logout(request: Request):
     response = await logout(request)
 
     try:
-        # Extract DB path
+        # Resolve db_path from DATABASE_URL
         if DATABASE_URL.startswith("sqlite:///"):
             parsed = urlparse(DATABASE_URL)
             db_path = os.path.abspath(os.path.join(".", parsed.path.lstrip("/")))
+
+            if not os.path.exists(db_path):
+                raise FileNotFoundError(f"Database file not found at {db_path}")
+
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            backup_filename = f"backup_{timestamp}.db"
+            upload_database_backup(local_path=db_path, drive_filename=backup_filename)
+            print(f"✅ Backup successful: {backup_filename}")
         else:
-            print("Skipping backup: Not a SQLite DB.")
-            return response
-
-        # Build timestamped filename
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        backup_filename = f"backup_{timestamp}.db"
-
-        upload_database_backup(local_path=db_path, drive_filename=backup_filename)
-        print(f"Backup successful: {backup_filename}")
-
+            print("⚠️ Skipping backup: Not a SQLite DB.")
     except Exception as e:
         import traceback
-        print("Backup failed:")
+        print("❌ Backup failed:")
         traceback.print_exc()
 
     return response
