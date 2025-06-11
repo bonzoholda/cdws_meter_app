@@ -118,25 +118,29 @@ async def handle_login(request: Request, username: str = Form(...), password: st
 async def handle_logout(request: Request):
     response = await logout(request)
 
-    # Parse DB path from DATABASE_URL
-    if DATABASE_URL.startswith("sqlite:///"):
-        parsed = urlparse(DATABASE_URL)
-        db_path = os.path.abspath(os.path.join(".", parsed.path.lstrip("/")))
-    else:
-        print("Skipping backup: Not a SQLite DB.")
-        return response
-
-    # Timestamped filename
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    backup_filename = f"backup_{timestamp}.db"
-
     try:
+        # Extract DB path
+        if DATABASE_URL.startswith("sqlite:///"):
+            parsed = urlparse(DATABASE_URL)
+            db_path = os.path.abspath(os.path.join(".", parsed.path.lstrip("/")))
+        else:
+            print("Skipping backup: Not a SQLite DB.")
+            return response
+
+        # Build timestamped filename
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        backup_filename = f"backup_{timestamp}.db"
+
         upload_database_backup(local_path=db_path, drive_filename=backup_filename)
         print(f"Backup successful: {backup_filename}")
+
     except Exception as e:
-        print(f"Backup failed: {e}")
+        import traceback
+        print("Backup failed:")
+        traceback.print_exc()
 
     return response
+
 
 
 
