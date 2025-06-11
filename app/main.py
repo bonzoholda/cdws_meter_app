@@ -1,5 +1,6 @@
 # app/main.py
 
+from fastapi import APIRouter, UploadFile, File, Request, Depends, Form
 from fastapi import FastAPI, Request, Form, UploadFile, File, Depends, Query
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -11,9 +12,10 @@ from datetime import datetime
 from collections import defaultdict
 import csv
 import io
+from io import StringIO
 
 from .database import Base, engine, SessionLocal
-from .models import MeterRecord
+from .models import MeterRecord, DataPelanggan
 from .drive_utils import upload_image_to_drive
 from .auth import add_auth, is_logged_in, login_form, login, logout
 
@@ -32,6 +34,39 @@ def get_db():
         yield db
     finally:
         db.close()
+
+router = APIRouter()
+
+@router.post("/import-pelanggan")
+async def import_pelanggan_csv(
+    csv_file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    if not csv_file.filename.endswith(".csv"):
+        return {"error": "Only CSV files are supported."}
+
+    content = await csv_file.read()
+    reader = csv.DictReader(StringIO(content.decode("utf-8")))
+
+    imported = 0
+    for row in reader:
+        user_id = row["user_id"].strip()
+        user_name = row["user_name"].strip()
+        user_address = row["user_address"].strip()
+
+        existing = db.query(DataPelanggan).filter_by(user_id=user_id).first()
+        if not existing:
+            pelanggan = DataPelanggan(
+                user_id=user_id,
+                user_name=user_name,
+                user_address=user_address,
+            )
+            db.add(pelanggan)
+            imported += 1
+
+    db.commit()
+    return RedirectResponse(url="/admin", status_code=303)
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
