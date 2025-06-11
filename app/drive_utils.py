@@ -9,6 +9,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload, MediaFileUpload, MediaIoBaseDownload
 from dotenv import load_dotenv
 from urllib.parse import urlparse
+from app.database import DATABASE_URL
 
 load_dotenv()
 
@@ -88,22 +89,37 @@ def restore_database_from_drive(filename: str):
     files = response.get('files', [])
 
     if not files:
-        raise FileNotFoundError(f"No backup file named {filename} found in Drive.")
+        raise FileNotFoundError(f"❌ No backup file named {filename} found in Drive.")
 
     file_id = files[0]['id']
+    print(f"📥 Found backup file: {filename} (ID: {file_id})")
 
-    # Step 2: Resolve correct DB path from DATABASE_URL
-    from app.database import DATABASE_URL
+    # Step 2: Resolve DB path
     if DATABASE_URL.startswith("sqlite:///"):
         parsed = urlparse(DATABASE_URL)
         db_path = os.path.abspath(os.path.join(".", parsed.path.lstrip("/")))
     else:
-        raise RuntimeError("Restore only supports SQLite databases.")
+        raise RuntimeError("❌ Restore only supports SQLite databases.")
 
-    # Step 3: Download and overwrite local DB
+    print(f"📁 Restoring to local path: {db_path}")
+
+    # Step 3: Delete existing DB if it exists
+    if os.path.exists(db_path):
+        os.remove(db_path)
+        print(f"🗑️ Deleted old DB at {db_path}")
+
+    # Step 4: Download and overwrite DB
     request = drive_service.files().get_media(fileId=file_id)
     fh = io.FileIO(db_path, 'wb')
     downloader = MediaIoBaseDownload(fh, request)
+
+    done = False
+    while not done:
+        status, done = downloader.next_chunk()
+        if status:
+            print(f"⬇️ Download progress: {int(status.progress() * 100)}%")
+
+    print(f"✅ Restore complete: {filename}")
 
 
 def get_latest_backup_file():
