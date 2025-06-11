@@ -38,6 +38,11 @@ def get_db():
 
 router = APIRouter()
 
+def check_admin_logged_in(request: Request):
+    if request.cookies.get("admin_logged_in") != "true":
+        raise HTTPException(status_code=307, detail="Redirecting to login", headers={"Location": "/admin/login"})
+
+
 @app.post("/import-pelanggan")
 async def import_pelanggan_csv(
     csv_file: UploadFile = File(...),
