@@ -47,6 +47,10 @@ def check_admin_logged_in(request: Request):
     if request.cookies.get("admin_logged_in") != "true":
         raise HTTPException(status_code=307, detail="Redirecting to login", headers={"Location": "/login"})
 
+@app.on_event("startup")
+def on_startup():
+    Base.metadata.create_all(bind=engine)
+    print("✅ All tables ensured on startup.")
 
 @app.post("/import-pelanggan")
 async def import_pelanggan_csv(
