@@ -156,8 +156,8 @@ async def handle_logout(request: Request):
 
 
 
-@app.get("/restore-backup")
-def restore_backup_route(filename: str = Query(...)):
+@app.post("/restore-backup")
+async def restore_backup_route(request: Request, filename: str = Form(...)):
     try:
         restored_path = restore_database_from_drive(filename)
         print(f"✅ Restored DB from Google Drive to: {restored_path}")
