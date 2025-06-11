@@ -45,7 +45,7 @@ def set_admin_cookie(response: Response):
 
 def check_admin_logged_in(request: Request):
     if request.cookies.get("admin_logged_in") != "true":
-        raise HTTPException(status_code=307, detail="Redirecting to login", headers={"Location": "/admin/login"})
+        raise HTTPException(status_code=307, detail="Redirecting to login", headers={"Location": "/login"})
 
 
 @app.post("/import-pelanggan")
@@ -90,7 +90,7 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
 
-    check_admin_logged_in()
+    check_admin_logged_in(request)
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/upload-image/")
