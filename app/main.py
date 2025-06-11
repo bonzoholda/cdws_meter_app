@@ -8,7 +8,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from uuid import uuid4
 import os
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 import csv
 import io
@@ -37,6 +37,11 @@ def get_db():
         db.close()
 
 router = APIRouter()
+
+# Session management: Helper to set and check cookies manually
+def set_admin_cookie(response: Response):
+    expires = datetime.utcnow().replace(tzinfo=timezone.utc) + timedelta(days=7)  # Explicitly setting UTC timezone
+    response.set_cookie("admin_logged_in", "true", expires=expires)
 
 def check_admin_logged_in(request: Request):
     if request.cookies.get("admin_logged_in") != "true":
@@ -84,6 +89,8 @@ def admin_dashboard(request: Request, db: Session = Depends(get_db)):
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
+
+    check_admin_logged_in()
     return templates.TemplateResponse("index.html", {"request": request})
 
 @app.post("/upload-image/")
