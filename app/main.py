@@ -142,6 +142,7 @@ async def handle_logout(request: Request):
         if DATABASE_URL.startswith("sqlite:///"):
             parsed = urlparse(DATABASE_URL)
             db_path = os.path.abspath(os.path.join(".", parsed.path.lstrip("/")))
+            print(f"📁 Resolved DB path: {db_path}")
 
             if not os.path.exists(db_path):
                 raise FileNotFoundError(f"❌ Database file not found at {db_path}")
@@ -150,20 +151,21 @@ async def handle_logout(request: Request):
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
 
-            # Check if relevant tables exist
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
             tables = {row[0] for row in cursor.fetchall()}
 
             if "meter_records" not in tables or "data_pelanggan" not in tables:
-                print("⚠️ Tables not found, skipping backup.")
+                print("⚠️ Required tables not found, skipping backup.")
+                conn.close()
                 return response
 
-            # Check if there's actual data
             cursor.execute("SELECT COUNT(*) FROM meter_records;")
             meter_count = cursor.fetchone()[0]
 
             cursor.execute("SELECT COUNT(*) FROM data_pelanggan;")
             pelanggan_count = cursor.fetchone()[0]
+
+            print(f"📊 Found {pelanggan_count} rows in data_pelanggan, {meter_count} in meter_records.")
 
             conn.close()
 
@@ -186,6 +188,7 @@ async def handle_logout(request: Request):
         traceback.print_exc()
 
     return response
+
 
 
 
