@@ -127,6 +127,11 @@ def restore_database_from_drive(filename: str):
     os.chmod(db_path, stat.S_IRUSR | stat.S_IWUSR)
     print(f"✅ Restored DB and set writable permissions at {db_path}")
 
+    # 🔁 Rebind session + reflect new metadata
+    engine.dispose()  # Close old connections
+    SessionLocal.configure(bind=engine)  # Rebind SessionLocal to engine
+    Base.metadata.reflect(bind=engine)  # Reflect new tables    
+
     # ✅ Step 6: Verify table contents
     import sqlite3
     try:
