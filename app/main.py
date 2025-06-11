@@ -47,6 +47,15 @@ def check_admin_logged_in(request: Request):
     if request.cookies.get("admin_logged_in") != "true":
         raise HTTPException(status_code=307, detail="Redirecting to login", headers={"Location": "/login"})
 
+@router.get("/debug/check-db")
+def check_database_status(db: Session = Depends(get_db)):
+    pelanggan_count = db.query(DataPelanggan).count()
+    meter_count = db.query(MeterRecord).count()
+
+    return {
+        "data_pelanggan_rows": pelanggan_count,
+        "meter_records_rows": meter_count
+    }
 
 @app.on_event("startup")
 def on_startup():
