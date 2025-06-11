@@ -21,7 +21,6 @@ from .drive_utils import upload_image_to_drive, upload_database_backup, restore_
 from .auth import add_auth, is_logged_in, login_form, login, logout
 from urllib.parse import urlparse
 
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 add_auth(app)
@@ -47,6 +46,18 @@ def set_admin_cookie(response: Response):
 def check_admin_logged_in(request: Request):
     if request.cookies.get("admin_logged_in") != "true":
         raise HTTPException(status_code=307, detail="Redirecting to login", headers={"Location": "/login"})
+
+# Only create tables if DB doesn't already exist
+if DATABASE_URL.startswith("sqlite:///"):
+    parsed = urlparse(DATABASE_URL)
+    db_path = os.path.abspath(os.path.join(".", parsed.path.lstrip("/")))
+
+    if not os.path.exists(db_path):
+        Base.metadata.create_all(engine)
+        print("✅ Tables created.")
+    else:
+        print("✅ DB exists, skipping table creation.")
+
 
 @app.on_event("startup")
 def on_startup():
